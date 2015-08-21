@@ -173,7 +173,7 @@ uses
   gd_directories_const, JclFileUtils, Forms, gd_CmdLineParams_unit,
   gd_GlobalParams_unit, jclSysInfo, IdSMTP, IdMessage, IBSQL,
   gd_encryption, rp_i_ReportBuilder_unit, rp_ReportClient, IdCoderMIME,
-  IBDatabase;
+  IBDatabase, gd_common_functions;
 
 function GetIPSec(AnIPSec: String): TIdSSLVersion;
 begin
@@ -673,7 +673,7 @@ begin
   end;
 
   if gdNotifierThread <> nil then
-    gdNotifierThread.Add('Отправка сообщения: ' + ASubject, 0, 2000);
+    gdNotifierThread.Add('Отправка сообщения: ' + ExpandMetaVariables(ASubject), 0, 2000);
 
   PostMsg(WM_GD_SEND_EMAIL);
 
@@ -745,8 +745,10 @@ var
   Msg: TIdMessage;
   IdSSLIOHandlerSocket: TIdSSLIOHandlerSocket;
   Attachment: TIdAttachment;
+  Attachments: TObjectList;
   ES: TgdEmailMessage;
   J: Integer;
+  K: Integer;
   _ID: Word;
   _Recipients: String;
   _Subject: String;
@@ -761,6 +763,9 @@ var
   _WndHandle: THandle;
   _ThreadID: THandle;
   _SynchronousSend: Boolean;
+  SL: TStringList;
+  PartSL: TStringList;
+  Part: TIdText;
 begin
   while FEmailCS <> nil do
   begin
@@ -827,9 +832,9 @@ begin
           if IdSMTP.Authenticate then
           begin
             Msg := TIdMessage.Create(nil);
-            Attachment := nil;
+            Attachments := nil;
             try
-              Msg.Subject := EncodeSubj(_Subject);
+              Msg.Subject := EncodeSubj(ExpandMetaVariables(_Subject));
               Msg.Recipients.EMailAddresses := _Recipients;
               Msg.From.Address := _SenderEmail;
               Msg.Body.Text := _BodyText;
@@ -837,13 +842,55 @@ begin
 
               if _FileName > '' then
               begin
-                Attachment := TIdAttachment.Create(Msg.MessageParts, _FileName);
-                Attachment.DeleteTempFile := False;
+                SL := TStringList.Create;
+                try
+                  SL.CommaText := _FileName;
+                  for K := 0 to SL.Count - 1 do
+                  begin
+                    if Attachments = nil then
+                      Attachments := TObjectList.Create(True);
+
+                    if SL.Count = 1 then
+                    begin
+                      if AnsiSameText(ExtractFileExt(SL[K]), '.HTM') then
+                      begin
+                        Msg.ContentType := 'multipart/mixed';
+                        PartSL := TStringList.Create;
+                        try
+                          PartSL.LoadFromFile(SL[K]);
+                          Part := TIdText.Create(Msg.MessageParts, PartSL);
+                          Part.ContentType := 'text/html';
+                        finally
+                          PartSL.Free;
+                        end;
+                      end;
+
+                      if AnsiSameText(ExtractFileExt(SL[K]), '.TXT') then
+                      begin
+                        Msg.ContentType := 'multipart/mixed';
+                        PartSL := TStringList.Create;
+                        try
+                          PartSL.LoadFromFile(SL[K]);
+                          Part := TIdText.Create(Msg.MessageParts, PartSL);
+                          Part.ContentType := 'text/plain';;
+                        finally
+                          PartSL.Free;
+                        end;
+                      end;
+                    end;
+
+                    Attachment := TIdAttachment.Create(Msg.MessageParts, SL[K]);
+                    Attachment.DeleteTempFile := False;
+                    Attachments.Add(Attachment);
+                  end;
+                finally
+                  SL.Free;
+                end;
               end;
 
               IdSMTP.Send(Msg);
               if gdNotifierThread <> nil then
-                gdNotifierThread.Add('Сообщение отправлено: ' + _Subject, 0, 2000);
+                gdNotifierThread.Add('Сообщение отправлено: ' + ExpandMetaVariables(_Subject), 0, 2000);
 
               if GetEmailAndLock(_ID, ES) then
               try
@@ -852,7 +899,7 @@ begin
                 FEmailCS.Leave;
               end;
             finally
-              Attachment.Free;
+              Attachments.Free;
               Msg.Free;
             end;
           end else
@@ -1069,28 +1116,13 @@ function TgdWebClientControl.SendEMail(const ASMTPKey: Integer;
   const AReportKey: Integer; const AnExportType: String;
   const Sync: Boolean;
   const AWndHandle, AThreadID: THandle): Word;
-
-  function GetExportType(AnExportType: String): TExportType;
-  begin
-    if AnExportType = 'DOC' then
-      Result := etWord
-    else if AnExportType = 'XLS' then
-      Result := etExcel
-    else if AnExportType = 'PDF' then
-      Result := etPdf
-    else if AnExportType = 'XML' then
-      Result := etXML
-    else
-      raise Exception.Create('unknown export type.')
-  end;
-
 var
   B: Variant;
   LFileName: String;
 begin
   Assert(ClientReport <> nil);
 
-  ClientReport.ExportType := GetExportType(AnExportType);
+  ClientReport.ExportType := AnExportType;
   ClientReport.ShowProgress := False;
 
   LFileName := GetEmailTempFileName(AnExportType);
@@ -1121,9 +1153,32 @@ begin
 end;
 
 destructor TgdEmailMessage.Destroy;
+var
+  K: Integer;
+  SL: TStringList;
+  SameDir: Boolean;
 begin
-  if WipeFile and DeleteFile(FileName) and WipeDirectory then
-    RemoveDir(ExtractFileDir(FileName));
+  if WipeFile then
+  begin
+    SameDir := True;
+    SL := TStringList.Create;
+    try
+      SL.CommaText := FileName;
+
+      for K := 0 to SL.Count - 1 do
+      begin
+        DeleteFile(SL[K]);
+        if SameDir and (K > 0) then
+          SameDir := AnsiSameText(ExtractFileDir(SL[K]), ExtractFileDir(SL[K-1]));
+      end;
+
+      if WipeDirectory and SameDir then
+        RemoveDir(ExtractFileDir(SL[0]));
+    finally
+      SL.Free;
+    end;
+  end;
+
   inherited;
 end;
 

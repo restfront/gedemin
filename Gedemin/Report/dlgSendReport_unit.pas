@@ -30,16 +30,26 @@ type
     rbXML: TRadioButton;
     pnlState: TPanel;
     btnClose: TButton;
+    rbTXT: TRadioButton;
+    rbHTM: TRadioButton;
+    rbODT: TRadioButton;
+    rbODS: TRadioButton;
     procedure actSendExecute(Sender: TObject);
     procedure actSendUpdate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actAddContactExecute(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
 
   private
     FPDFExport: TfrxCustomExportFilter;
     FRTFExport: TfrxCustomExportFilter;
     FXLSExport: TfrxCustomExportFilter;
     FXMLExport: TfrxCustomExportFilter;
+    FTXTExport: TfrxCustomExportFilter;
+    FHTMLExport: TfrxCustomExportFilter;
+    FODTExport: TfrxCustomExportFilter;
+    FODSExport: TfrxCustomExportFilter;
+
     FPreview: TfrxPreview;
     FEmailID: Word;
 
@@ -85,6 +95,10 @@ begin
   FRTFExport := nil;
   FXLSExport := nil;
   FXMLExport := nil;
+  FTXTExport := nil;
+  FHTMLExport := nil;
+  FODTExport := nil;
+  FODSExport := nil;
 
   for I := 0 to AfrxExportFilters.Count - 1 do
   begin
@@ -95,13 +109,25 @@ begin
     else if TfrxCustomExportFilter(frxExportFilters[i].Filter).ClassName = 'TfrxXLSExport' then
       FXLSExport := TfrxCustomExportFilter(frxExportFilters[i].Filter)
     else if TfrxCustomExportFilter(frxExportFilters[i].Filter).ClassName = 'TfrxXMLExport' then
-      FXMLExport := TfrxCustomExportFilter(frxExportFilters[i].Filter);
+      FXMLExport := TfrxCustomExportFilter(frxExportFilters[i].Filter)
+    else if TfrxCustomExportFilter(frxExportFilters[i].Filter).ClassName = 'TfrxTXTExport' then
+      FTXTExport := TfrxCustomExportFilter(frxExportFilters[i].Filter)
+    else if TfrxCustomExportFilter(frxExportFilters[i].Filter).ClassName = 'TfrxHTMLExport' then
+      FHTMLExport := TfrxCustomExportFilter(frxExportFilters[i].Filter)
+    else if TfrxCustomExportFilter(frxExportFilters[i].Filter).ClassName = 'TfrxODTExport' then
+      FODTExport := TfrxCustomExportFilter(frxExportFilters[i].Filter)
+    else if TfrxCustomExportFilter(frxExportFilters[i].Filter).ClassName = 'TfrxODSExport' then
+      FODSExport := TfrxCustomExportFilter(frxExportFilters[i].Filter);
   end;
 
   rbPDF.Enabled := FPDFExport <> nil;
   rbDoc.Enabled := FRTFExport <> nil;
   rbXLS.Enabled := FXLSExport <> nil;
   rbXML.Enabled := FXMLExport <> nil;
+  rbTXT.Enabled := FTXTExport <> nil;
+  rbHTM.Enabled := FHTMLExport <> nil;
+  rbODT.Enabled := FODTExport <> nil;
+  rbODS.Enabled := FODSExport <> nil;
 
   edSubject.Text := ACaption;
 end;
@@ -132,6 +158,26 @@ begin
   begin
     CurrExport := FXMLExport;
     FExt := 'XML';
+  end
+  else if rbTXT.Checked then
+  begin
+    CurrExport := FTXTExport;
+    FExt := 'TXT';
+  end
+  else if rbHTM.Checked then
+  begin
+    CurrExport := FHTMLExport;
+    FExt := 'HTM';
+  end
+  else if rbODT.Checked then
+  begin
+    CurrExport := FODTExport;
+    FExt := 'ODT';
+  end
+  else if rbODS.Checked then
+  begin
+    CurrExport := FODSExport;
+    FExt := 'ODS';
   end else
     CurrExport := nil;
 
@@ -214,6 +260,12 @@ begin
       edRecipients.Text := edRecipients.Text + ',';
     edRecipients.Text := edRecipients.Text + R[0, 0];
   end;
+end;
+
+procedure TdlgSendReport.FormCreate(Sender: TObject);
+begin
+  Assert(gdcBaseManager <> nil);
+  iblkupSMTP.Transaction := gdcBaseManager.ReadTransaction;
 end;
 
 end.

@@ -87,7 +87,7 @@ type
     procedure actAutoNumerationExecute(Sender: TObject);
     procedure actWizardHeaderUpdate(Sender: TObject);
     procedure actWizardLineUpdate(Sender: TObject);
-    procedure edEnglishNameChange(Sender: TObject);
+    procedure iblcHeaderTableChange(Sender: TObject);
 
   private
     FScriptChanged: Boolean;
@@ -119,7 +119,8 @@ uses
   gd_ClassList,         gd_directories_const,        gd_strings,
   wiz_Main_Unit,        gd_security_operationconst,  gd_security,
   gd_i_ScriptFactory,   prm_ParamFunctions_unit,     gdcConstants,
-  rp_report_const,      gdcBaseInterface,            gdcExplorer;
+  rp_report_const,      gdcBaseInterface,            gdcExplorer,
+  jclStrings;
 
 { Tgdc_dlgDocumentType }
 
@@ -234,15 +235,6 @@ end;
 procedure Tgdc_dlgDocumentType.iblcHeaderTableCreateNewObject(
   Sender: TObject; ANewObject: TgdcBase);
 begin
-  if not CheckEnName(edEnglishName.Text) then
-  begin
-    edEnglishName.Show;
-    raise EgdcIBError.Create(
-      'В наименовании на английском должны быть только латинские символы');
-  end;
-
-  if Pos(UserPrefix, UpperCase(edEnglishName.Text)) = 0 then
-    edEnglishName.Text := UserPrefix + edEnglishName.Text;
   aNewObject.FieldByName('relationname').AsString := edEnglishName.Text;
   aNewObject.FieldByName('lname').AsString := edDocumentName.Text;
   aNewObject.FieldByName('lshortname').AsString := aNewObject.FieldByName('lname').AsString;
@@ -251,18 +243,9 @@ end;
 procedure Tgdc_dlgDocumentType.iblcLineTableCreateNewObject(
   Sender: TObject; ANewObject: TgdcBase);
 begin
-  if not CheckEnName(edEnglishName.Text) then
-  begin
-    edEnglishName.Show;
-    raise EgdcIBError.Create('В наименовании на английском должны быть только латинские символы');
-  end;
-
-  if Pos(UserPrefix, UpperCase(edEnglishName.Text)) = 0 then
-    edEnglishName.Text := UserPrefix + edEnglishName.Text;
   aNewObject.FieldByName('relationname').AsString := edEnglishName.Text + 'LINE';
   aNewObject.FieldByName('lname').AsString := edDocumentName.Text + '(позиция)';
   aNewObject.FieldByName('lshortname').AsString := aNewObject.FieldByName('lname').AsString;
-
 end;
 
 procedure Tgdc_dlgDocumentType.actOkUpdate(Sender: TObject);
@@ -274,11 +257,31 @@ end;
 
 procedure Tgdc_dlgDocumentType.edEnglishNameExit(Sender: TObject);
 begin
+  Assert(atDatabase <> nil);
+
+  edEnglishName.Text := StringReplace(edEnglishName.Text, ' ', '', [rfReplaceAll]);
+
   if not CheckEnName(edEnglishName.Text) then
   begin
     edEnglishName.SetFocus;
-    raise EgdcIBError.Create(
-      'В наименовании на английском должны быть только латинские символы');
+    MessageBox(Handle,
+      'В наименовании таблицы допускаются только латинские символы.',
+      'Внимание',
+      MB_OK or MB_ICONHAND or MB_TASKMODAL);
+    Abort;
+  end;
+
+  if (StrIPos(UserPrefix, edEnglishName.Text) <> 1) and
+    (edEnglishName.Text > '') and
+    (atDatabase.Relations.ByRelationName(edEnglishName.Text) = nil)
+  then
+    edEnglishName.Text := UserPrefix + edEnglishName.Text;
+
+  if (gdcObject.State = dsInsert)
+    and (not AnsiSameText(edEnglishName.Text, iblcHeaderTable.Text)) then
+  begin
+    iblcHeaderTable.CurrentKeyInt := 0;
+    iblcLineTable.CurrentKeyInt := 0;
   end;
 end;
 
@@ -288,45 +291,38 @@ begin
 end;
 
 function Tgdc_dlgDocumentType.GetRelation(isDocument: Boolean): TatRelation;
-var
-  CurrKey: String;
 begin
   if isDocument then
-    CurrKey := iblcHeaderTable.CurrentKey
+    Result := atDatabase.Relations.ByID(iblcHeaderTable.CurrentKeyInt)
   else
-    CurrKey := iblcLineTable.CurrentKey;
-
-  if CurrKey > '' then
-    Result := atDatabase.Relations.ByID(StrToInt(CurrKey))
-  else
-    Result := nil;
+    Result := atDatabase.Relations.ByID(iblcLineTable.CurrentKeyInt);
 end;
 
 function Tgdc_dlgDocumentType.GetRootRelation(isDocument: Boolean): TatRelation;
-var
+{var
   CE: TgdClassEntry;
-  Part: TgdcDocumentClassPart;
-  DocID: Integer;
+  Part: TgdcDocumentClassPart;}
+  //DocID: Integer;
 begin
-  Result := nil;
+  Result := GetRelation(IsDocument);
 
-  if isDocument then
+  {if isDocument then
     Part := dcpHeader
   else
-    Part := dcpLine;
+    Part := dcpLine;}
 
-  if gdcObject.State = dsInsert then
+  {if gdcObject.State = dsInsert then
     DocID := (gdcObject as TgdcTree).Parent
   else
-    DocID := gdcObject.ID;
+    DocID := gdcObject.ID;}
 
-  CE := gdClassList.FindDocByTypeID(DocID, Part);
+  {CE := gdClassList.FindDocByTypeID(gdcObject.ID, Part);
 
   if CE <> nil then
     CE := CE.GetRootSubType;
 
   if CE <> nil then
-    Result := atDatabase.Relations.ByRelationName(TgdDocumentEntry(CE).DistinctRelation);
+    Result := atDatabase.Relations.ByRelationName(TgdDocumentEntry(CE).DistinctRelation);}
 end;
 
 procedure Tgdc_dlgDocumentType.SetupDialog;
@@ -935,12 +931,17 @@ begin
   (Sender as TAction).Enabled := IBLogin.IsIBUserAdmin;
 end;
 
-procedure Tgdc_dlgDocumentType.edEnglishNameChange(Sender: TObject);
+procedure Tgdc_dlgDocumentType.iblcHeaderTableChange(Sender: TObject);
+var
+  R: TatRelation;
 begin
-  if (gdcObject.State = dsInsert) then
+  Assert(atDatabase <> nil);
+
+  if iblcHeaderTable.CurrentKeyInt > -1 then
   begin
-    iblcHeaderTable.CurrentKeyInt := 0;
-    iblcLineTable.CurrentKeyInt := 0;
+    R := atDatabase.Relations.ByID(iblcHeaderTable.CurrentKeyInt);
+    if (R <> nil) and (edEnglishName.Text <> R.RelationName) then
+      edEnglishName.Text := R.RelationName;
   end;
 end;
 

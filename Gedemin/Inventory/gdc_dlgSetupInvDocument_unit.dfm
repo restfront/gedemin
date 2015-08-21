@@ -20,6 +20,10 @@ inherited gdc_dlgSetupInvDocument: Tgdc_dlgSetupInvDocument
       inherited Label2: TLabel
         Top = 238
       end
+      inherited Label3: TLabel
+        Width = 124
+        Caption = 'Наименование таблицы:'
+      end
       object lblDocument: TLabel [6]
         Left = 8
         Top = 192
@@ -39,6 +43,21 @@ inherited gdc_dlgSetupInvDocument: Tgdc_dlgSetupInvDocument
       end
       inherited Label4: TLabel
         Top = 284
+      end
+      object lblNotification: TLabel [11]
+        Left = 8
+        Top = 344
+        Width = 459
+        Height = 13
+        Caption = 
+          'Выберите (создайте) таблицы шапки и позиции документа для настро' +
+          'йки его признаков.'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clRed
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
       end
       inherited edDocumentName: TDBEdit
         Color = clWindow
@@ -60,7 +79,6 @@ inherited gdc_dlgSetupInvDocument: Tgdc_dlgSetupInvDocument
         Color = clWindow
         Enabled = True
         TabOrder = 6
-        OnChange = iblcHeaderTableChange
       end
       inherited iblcLineTable: TgsIBLookupComboBox
         Top = 234
@@ -455,7 +473,7 @@ inherited gdc_dlgSetupInvDocument: Tgdc_dlgSetupInvDocument
         Height = 21
         Style = csDropDownList
         Color = 11141119
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 0
         OnChange = cbDebitMovementChange
       end
@@ -513,7 +531,7 @@ inherited gdc_dlgSetupInvDocument: Tgdc_dlgSetupInvDocument
         Height = 21
         Style = csDropDownList
         Color = 11141119
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 2
         OnDropDown = luCreditFromDropDown
       end
@@ -523,7 +541,7 @@ inherited gdc_dlgSetupInvDocument: Tgdc_dlgSetupInvDocument
         Width = 368
         Height = 21
         Style = csDropDownList
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 8
         OnDropDown = luCreditFromDropDown
       end

@@ -1,10 +1,10 @@
 object dlgSendReport: TdlgSendReport
-  Left = 441
-  Top = 286
+  Left = 670
+  Top = 248
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsDialog
   Caption = 'Отправка отчета по электронной почте'
-  ClientHeight = 243
+  ClientHeight = 269
   ClientWidth = 387
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -13,12 +13,14 @@ object dlgSendReport: TdlgSendReport
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDesktopCenter
+  OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 8
-    Top = 187
+    Top = 211
     Width = 93
     Height = 13
     Caption = 'Почтовый сервер:'
@@ -53,7 +55,7 @@ object dlgSendReport: TdlgSendReport
   end
   object iblkupSMTP: TgsIBLookupComboBox
     Left = 106
-    Top = 184
+    Top = 208
     Width = 155
     Height = 21
     HelpContext = 1
@@ -63,7 +65,7 @@ object dlgSendReport: TdlgSendReport
     ItemHeight = 13
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 8
+    TabOrder = 12
   end
   object edRecipients: TEdit
     Left = 74
@@ -92,7 +94,7 @@ object dlgSendReport: TdlgSendReport
     Width = 75
     Height = 21
     Action = actSend
-    TabOrder = 9
+    TabOrder = 13
   end
   object btnAdd: TButton
     Left = 303
@@ -119,6 +121,7 @@ object dlgSendReport: TdlgSendReport
     Height = 17
     Caption = 'PDF'
     TabOrder = 5
+    TabStop = True
   end
   object rbXLS: TRadioButton
     Left = 174
@@ -127,6 +130,7 @@ object dlgSendReport: TdlgSendReport
     Height = 17
     Caption = 'XLS'
     TabOrder = 6
+    TabStop = True
   end
   object rbXML: TRadioButton
     Left = 224
@@ -135,15 +139,16 @@ object dlgSendReport: TdlgSendReport
     Height = 17
     Caption = 'XML'
     TabOrder = 7
+    TabStop = True
   end
   object pnlState: TPanel
     Left = 73
-    Top = 213
+    Top = 237
     Width = 305
     Height = 22
     BevelOuter = bvLowered
     Color = clInfoBk
-    TabOrder = 11
+    TabOrder = 15
   end
   object btnClose: TButton
     Left = 303
@@ -152,7 +157,43 @@ object dlgSendReport: TdlgSendReport
     Height = 21
     Caption = 'Закрыть'
     ModalResult = 1
+    TabOrder = 14
+  end
+  object rbTXT: TRadioButton
+    Left = 74
+    Top = 184
+    Width = 41
+    Height = 17
+    Caption = 'TXT'
+    TabOrder = 8
+    TabStop = True
+  end
+  object rbHTM: TRadioButton
+    Left = 124
+    Top = 184
+    Width = 41
+    Height = 17
+    Caption = 'HTM'
+    TabOrder = 9
+    TabStop = True
+  end
+  object rbODT: TRadioButton
+    Left = 174
+    Top = 184
+    Width = 41
+    Height = 17
+    Caption = 'ODT'
     TabOrder = 10
+    TabStop = True
+  end
+  object rbODS: TRadioButton
+    Left = 224
+    Top = 184
+    Width = 41
+    Height = 17
+    Caption = 'ODS'
+    TabOrder = 11
+    TabStop = True
   end
   object alBase: TActionList
     Left = 272
