@@ -427,6 +427,7 @@ begin
   {$IFDEF LOCALIZATION}S := S + 'LOCALIZATION, ';{$ENDIF}
   {$IFDEF QBUILDER}S := S + 'QBUILDER, ';{$ENDIF}
   {$IFDEF WITH_INDY}S := S + 'WITH_INDY, ';{$ENDIF}
+  {$IFDEF RESTFRONT}S := S + 'RESTFRONT, ';{$ENDIF}
   if S > '' then
   begin
     SetLength(S, Length(S) - 2);
