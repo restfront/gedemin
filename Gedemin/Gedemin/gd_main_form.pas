@@ -1248,6 +1248,9 @@ procedure TfrmGedeminMain.Loaded;
 begin
   inherited;
 
+  {$IFDEF RESTFRONT}
+  PostMessage(Self.Handle, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+  {$ELSE}
   if Position = poDesigned then
   begin
     Left := Self.Monitor.Left - 1;
@@ -1255,6 +1258,7 @@ begin
     // изменим на ширину монитора, на котором находится форма
     Width := Self.Monitor.Width + 2;
   end;
+  {$ENDIF}
 
   tbForms.Items.Clear;
 end;
