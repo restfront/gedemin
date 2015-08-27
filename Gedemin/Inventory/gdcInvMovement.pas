@@ -6746,7 +6746,11 @@ begin
       if not FisMinusRemains then
       begin
         if not HasSubSet(cst_AllRemains) then
+          {$IFDEF RESTFRONT}
+          Result := Result + ' HAVING SUM(M.BALANCE) <> 0 ';
+          {$ELSE}
           Result := Result + ' HAVING SUM(M.BALANCE) > 0 ';
+          {$ENDIF}
       end
       else
         Result := Result + ' HAVING SUM(M.BALANCE) < 0 ';
@@ -6758,7 +6762,11 @@ begin
         if not HasSubSet(cst_AllRemains) then
         begin
           if not FIsNewDateRemains then
+            {$IFDEF RESTFRONT}
+            Result := Result + ' HAVING SUM(M.DEBIT - M.CREDIT) <> 0 '
+            {$ELSE}
             Result := Result + ' HAVING SUM(M.DEBIT - M.CREDIT) > 0 '
+            {$ENDIF}
           else
             Result := Result + ' HAVING SUM ( M.BALANCE - REST.REMAINS )  >  0 '
         end
@@ -6774,7 +6782,11 @@ begin
     if not FisMinusRemains then
     begin
       if not HasSubSet(cst_AllRemains) then
+        {$IFDEF RESTFRONT}
+        Result := Result + ' HAVING SUM(M.BALANCE) <> 0 ';
+        {$ELSE}
         Result := Result + ' HAVING SUM(M.BALANCE) > 0 ';
+        {$ENDIF}
     end
     else
       Result := Result + ' HAVING SUM(M.BALANCE) < 0 ';
