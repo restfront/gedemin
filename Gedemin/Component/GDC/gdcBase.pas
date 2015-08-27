@@ -17733,6 +17733,7 @@ end;
 
 procedure TgdcBase.CheckDoFieldChange;
 begin
+  {$IFNDEF RESTFRONT}
   if FInDoFieldChange then
   begin
     MessageBox(ParentHandle,
@@ -17740,6 +17741,7 @@ begin
       'Внимание',
       MB_OK or MB_ICONEXCLAMATION or MB_TASKMODAL);
   end;
+  {$ENDIF}
 end;
 
 function TgdcBase.GetCanModify: Boolean;
