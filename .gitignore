@@ -1,0 +1,11 @@
+*.~*
+*.dsk
+*.cfg
+*.dof
+
+Gedemin/gedemin.bpg
+Gedemin/Component/TeeChart
+Gedemin/BPL
+Gedemin/DCU
+Gedemin/EXE
+Gedemin/FastReport 4
