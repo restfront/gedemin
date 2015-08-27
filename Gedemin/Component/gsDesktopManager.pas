@@ -1239,7 +1239,11 @@ begin
     if Screen.Forms[I] <> Application.MainForm then
     begin
       if (Screen.Forms[I] is TCreateableForm)
-        and (not (Screen.Forms[I] is Tgdc_dlgG)) then
+        and (not (Screen.Forms[I] is Tgdc_dlgG))
+        {$IFDEF RESTFRONT}
+        and (Screen.Forms[I] as TCreateableForm).ShowSpeedButton
+        {$ENDIF}
+      then
       begin
         if Screen.Forms[I].Visible or (Find(Screen.Forms[I]) <> nil) then
           (Screen.Forms[I] as TCreateableForm).SaveDesktopSettings;
