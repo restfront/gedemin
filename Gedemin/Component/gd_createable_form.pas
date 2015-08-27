@@ -1309,6 +1309,16 @@ begin
 
     SC_MAXIMIZE:
       begin
+        {$IFDEF RESTFRONT}
+        if (Self = Application.MainForm) then
+        begin
+          SystemParametersInfo(SPI_GETWORKAREA, 0, @RCurr, 0);
+          SetBounds(RCurr.Left, RCurr.Top, RCurr.Right - RCurr.Left + 1, RCurr.Bottom - RCurr.Top);
+
+          Exit;
+        end
+        else
+        {$ENDIF}
         if (Self <> Application.MainForm)
           and (not (cfsDesigning in FCreateableFormState))
           and (not (fsModal in Self.FormState))
