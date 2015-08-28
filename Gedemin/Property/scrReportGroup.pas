@@ -236,7 +236,11 @@ type
 
 implementation
 
-uses IBSQL, Windows, rp_report_const, gdcConstants, gdcReport;
+uses
+  IBSQL, Windows, rp_report_const, gdcConstants, gdcReport
+  {$IFDEF RESTFRONT}
+  , at_classes
+  {$ENDIF};
 
 type
   TLabelStream = array[0..3] of char;
@@ -556,6 +560,7 @@ procedure TscrReportList.LoadWithSubGroup(const AGroupKey: Integer);
 var
   gdcReport: TgdcReport;
   Flag: Boolean;
+  {$IFDEF RESTFRONT} IBDS: TIBDataSet; {$ENDIF}
 begin
   gdcReport := TgdcReport.Create(nil);
   try
@@ -585,6 +590,29 @@ begin
           Report[Add(TscrReportItem.Create)].ReadFromDataSet(gdcReport);
           gdcReport.Next;
         end;
+
+        {$IFDEF RESTFRONT}
+        if Assigned(atDatabase.Relations.ByRelationName('RP_GLOBALREPORTLIST')) then
+        begin
+          IBDS := TIBDataSet.Create(nil);
+          try
+            IBDS.Transaction := FTransaction;
+            IBDS.SelectSQL.Text := ' SELECT R.* ' +
+              ' FROM RP_GLOBALREPORTLIST G ' +
+              ' JOIN RP_REPORTLIST R ON G.REPORTLISTKEY = R.ID ' +
+              ' WHERE G.REPORTGROUPKEY = :id ';
+            IBDS.Params[0].AsInteger := AGroupKey;
+            IBDS.Open;
+            while not IBDS.Eof do
+            begin
+              Report[Add(TscrReportItem.Create)].ReadFromDataSet(IBDS);
+              IBDS.Next;
+            end;
+          finally
+            IBDS.Free;
+          end;
+        end;
+        {$ENDIF}
       finally
         if Flag then
           FTransaction.Commit;
@@ -872,6 +900,15 @@ begin
                 TmpRp.Assign(ReportList[I]);
 
                 GroupItemsByID[ReportList[I].ReportGroupKey].ReportList.Add(TmpRp);
+              {$IFDEF RESTFRONT}
+              end
+              else if ReportList[I].ReportGroupKey > 0 then
+              begin
+                TmpRp := TscrReportItem.Create;
+                TmpRp.Assign(ReportList[I]);
+
+                GroupItemsByID[AId].ReportList.Add(TmpRp);
+              {$ENDIF}
               end;
             end;
           finally

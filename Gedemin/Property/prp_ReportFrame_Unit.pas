@@ -37,6 +37,9 @@ type
     dbcbDisplayInMenu: TDBCheckBox;
     dbcbModalPreview: TDBCheckBox;
     iblFolder: TgsIBLookupComboBox;
+    actChooseDocumentType: TAction;
+    tbiChooseDocumentType: TTBItem;
+    TBSeparatorItem1: TTBSeparatorItem;
     procedure MainFunctionFramegdcFunctionAfterPost(DataSet: TDataSet);
     procedure ParamFunctionFramegdcFunctionAfterPost(DataSet: TDataSet);
     procedure EventFunctionFramegdcFunctionAfterPost(DataSet: TDataSet);
@@ -82,6 +85,7 @@ type
     procedure gdcReportAfterInternalDeleteRecord(DataSet: TDataSet);
     procedure gdcReportAfterDelete(DataSet: TDataSet);
     procedure gdcReportAfterOpen(DataSet: TDataSet);
+    procedure actChooseDocumentTypeExecute(Sender: TObject);
   private
     { Private declarations }
     procedure PrepareTestResult;
@@ -197,6 +201,9 @@ uses
   {must be placed after Windows unit!}
   {$IFDEF LOCALIZATION}
     , gd_localization_stub
+  {$ENDIF}
+  {$IFDEF RESTFRONT}
+  , gdcClasses, at_classes
   {$ENDIF}
   ;
 
@@ -2506,6 +2513,96 @@ begin
       q.Free;
     end;
   end;
+end;
+
+procedure TReportFrame.actChooseDocumentTypeExecute(Sender: TObject);
+{$IFDEF RESTFRONT}
+var
+  gdcDocumentType: TgdcDocumentType;
+  A: OleVariant;
+  ibsql: TIBSQL;
+  Transaction: TIBTransaction;
+{$ENDIF}  
+begin
+  {$IFDEF RESTFRONT}
+  if not Assigned(atDatabase.Relations.ByRelationName('RP_GLOBALREPORTLIST')) then
+    Exit;
+
+  if gdcReport.ID > 0 then
+  begin
+    gdcDocumentType := TgdcDocumentType.Create(Self);
+    try
+      gdcDocumentType.Transaction := gdcBaseManager.ReadTransaction;
+      gdcDocumentType.Open;
+
+      Transaction := TIBTransaction.Create(nil);
+      ibsql := TIBSQL.Create(nil);
+      try
+        Transaction.DefaultDataBase := gdcReport.Transaction.DefaultDataBase;
+        Transaction.StartTransaction;
+        try
+          ibsql.Transaction := Transaction;
+
+          // Ищем выбранные типы документов для отчета
+          ibsql.SQL.Text :=
+            ' SELECT DOC.ID ' +
+            ' FROM RP_GLOBALREPORTLIST R  ' +
+            ' JOIN GD_DOCUMENTTYPE DOC ON DOC.REPORTGROUPKEY = R.REPORTGROUPKEY ' +
+            ' WHERE R.REPORTLISTKEY = :ID ';
+          ibsql.Params[0].AsInteger := gdcReport.ID;
+          ibsql.ExecQuery;
+          while not ibsql.Eof do
+          begin
+            gdcDocumentType.SelectedID.Add(ibsql.Fields[0].AsInteger);
+            ibsql.Next;
+          end;
+          ibsql.Close;
+
+          // Просим пользователя выбрать типы
+          if gdcDocumentType.ChooseItems(A) then
+          begin
+            gdcDocumentType.Close;
+            gdcDocumentType.SubSet := 'OnlySelected';
+            gdcDocumentType.Open;
+            gdcDocumentType.First;
+
+            // Удаляем выбранные ранее
+            ibsql.SQL.Text :=
+              ' DELETE FROM RP_GLOBALREPORTLIST ' +
+              ' WHERE REPORTLISTKEY = ' + gdcReport.FieldByName('ID').AsString;
+            ibsql.ExecQuery;
+            ibsql.Close;
+
+            // Сохраняем выбранные
+            ibsql.SQL.Text :=
+              'INSERT INTO RP_GLOBALREPORTLIST (REPORTGROUPKEY, REPORTLISTKEY) ' +
+              ' VALUES (:groupkey, ' + gdcReport.FieldByName('ID').AsString + ' ) ';
+            while not gdcDocumentType.Eof do
+            begin
+              ibsql.Params[0].AsInteger := gdcDocumentType.FieldByName('REPORTGROUPKEY').AsInteger;
+              ibsql.ExecQuery;
+
+              gdcDocumentType.Next;
+            end;
+          end;
+
+          Transaction.Commit;
+        except
+          on E: Exception do
+          begin
+            Transaction.Rollback;
+            Application.ShowException(E);
+          end;
+        end;
+      finally
+        ibsql.Free;
+        Transaction.Free;
+      end;
+    finally
+      gdcDocumentType.Free;
+    end;
+  end;
+  {$ENDIF}
 end;
 
 initialization
