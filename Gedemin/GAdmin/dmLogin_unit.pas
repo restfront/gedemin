@@ -223,7 +223,7 @@ begin
     if gd_GlobalParams.GetWebServerActive and (gdWebServerControl <> nil) then
       gdWebServerControl.ActivateServer
     else if gd_GlobalParams.GetWebClientActive and (gdWebClientControl <> nil) then
-      gdWebClientControl.AfterConnection;
+      {$IFNDEF RESTFRONT}gdWebClientControl.AfterConnection{$ENDIF};
     {$ENDIF}
   end;
 end;
