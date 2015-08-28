@@ -227,7 +227,11 @@ const
   ProgID_MSXML_XMLSchemaCache     = 'MSXML2.XMLSchemaCache.6.0';
 
   //
+  {$IFDEF RESTFRONT}
+  Gedemin_NameServerURL           = 'http://restfront.by/gedemin/gdwebserver';
+  {$ELSE}
   Gedemin_NameServerURL           = 'http://gsbelarus.com/gs/gedemin/gdwebserver';
+  {$ENDIF}
 
   //
   Gedemin_Updater                 = 'gedemin_upd.exe';
