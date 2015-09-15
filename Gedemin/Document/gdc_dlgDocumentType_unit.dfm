@@ -1,6 +1,6 @@
 inherited gdc_dlgDocumentType: Tgdc_dlgDocumentType
-  Left = 671
-  Top = 278
+  Left = 676
+  Top = 282
   Caption = 'Документ'
   ClientHeight = 423
   ClientWidth = 532
