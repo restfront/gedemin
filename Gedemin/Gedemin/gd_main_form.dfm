@@ -26,7 +26,7 @@ object frmGedeminMain: TfrmGedeminMain
   object TBDockMain: TTBDock
     Left = 0
     Top = 0
-    Width = 953
+    Width = 961
     Height = 26
     LimitToOneRow = True
     object tbMainMenu: TTBToolbar
@@ -173,9 +173,11 @@ object frmGedeminMain: TfrmGedeminMain
         end
         object TBItem22: TTBItem
           Action = actLoadPackage
+          Caption = 'Синхронизация ПИ / Установка пакетов ...'
         end
         object tbiSettings: TTBItem
           Action = actSettings
+          Caption = 'Пространства имен / Настройки'
         end
         object TBSeparatorItem17: TTBSeparatorItem
         end
@@ -381,8 +383,8 @@ object frmGedeminMain: TfrmGedeminMain
   end
   object TBDockForms: TTBDock
     Left = 0
-    Top = 26
-    Width = 953
+    Top = 27
+    Width = 961
     Height = 27
     BoundLines = [blTop]
     Color = clWindow

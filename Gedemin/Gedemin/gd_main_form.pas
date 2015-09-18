@@ -2058,7 +2058,14 @@ end;
 
 procedure TfrmGedeminMain.actSettingsExecute(Sender: TObject);
 begin
+  {$IFDEF RESTFRONT}
+  if (GetAsyncKeyState(VK_SHIFT) shr 1) = 0 then
+    ViewFormByClass('TgdcNamespace', '', False)
+  else
+    ViewFormByClass('TgdcSetting', '', False);
+  {$ELSE}
   ViewFormByClass('TgdcNamespace', '', False);
+  {$ENDIF}
 end;
 
 procedure TfrmGedeminMain.actSettingsUpdate(Sender: TObject);
