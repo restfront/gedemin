@@ -813,6 +813,11 @@ begin
   ShowSpeedButton := True;
   UseDesigner := False;
 {$ENDIF}  //!!
+
+  {$IFDEF RESTFRONT}
+  Printer.Refresh;
+  {$ENDIF}
+
   PBox := TfrPBox.Create(Self);
   with PBox do
   begin
