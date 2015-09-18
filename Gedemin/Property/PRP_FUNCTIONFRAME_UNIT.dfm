@@ -1,8 +1,6 @@
 inherited FunctionFrame: TFunctionFrame
-  Height = 317
   OnResize = FrameResize
   inherited PageControl: TSuperPageControl
-    Height = 317
     OnChange = PageControlChange
     OnChanging = PageControlChanging
     inherited tsProperty: TSuperTabSheet
@@ -29,7 +27,7 @@ inherited FunctionFrame: TFunctionFrame
       end
       inherited pMain: TPanel
         Top = 28
-        Height = 262
+        Height = 218
         OnResize = pMainResize
         inherited lbDescription: TLabel
           Top = 80
@@ -602,8 +600,8 @@ inherited FunctionFrame: TFunctionFrame
       object pnlDependedFrom: TPanel
         Left = 220
         Top = 0
-        Width = 215
-        Height = 294
+        Width = 223
+        Height = 250
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 1
@@ -651,25 +649,25 @@ inherited FunctionFrame: TFunctionFrame
     Images = dmImages.il16x16
     OnPopup = PopupMenuPopup
     Left = 304
-    object nExternalEditor: TMenuItem [0]
-      Action = actExternalEditor
-    end
-    object nExternalEditorBreak: TMenuItem [1]
-      Caption = '-'
-    end
-    object miEnableBreakPoint: TMenuItem [2]
+    object miEnableBreakPoint: TMenuItem [0]
       Action = actEnableBreakPoint
       Visible = False
     end
-    object miPropertyBreakPoint: TMenuItem [3]
+    object miPropertyBreakPoint: TMenuItem [1]
       Action = actPropertyBreakPoint
       Visible = False
     end
-    object miSeparator: TMenuItem [4]
+    object miSeparator: TMenuItem [2]
       Caption = '-'
       Visible = False
     end
     object miS2: TMenuItem
+      Caption = '-'
+    end
+    object nExternalEditor: TMenuItem
+      Action = actExternalEditor
+    end
+    object nExternalEditorBreak: TMenuItem
       Caption = '-'
     end
     object miFind: TMenuItem
