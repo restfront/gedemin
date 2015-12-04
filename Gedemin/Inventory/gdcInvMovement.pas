@@ -7434,10 +7434,16 @@ begin
     begin
       if IgnoryFeatures.IndexOf(Features[i]) < 0 then
       begin
-        if not DataSet.FieldByName(Prefix + Features[i]).IsNull then
-          ExtraConditions.Add('z.' + Features[i] + ' = :' + Features[i])
+        if DataSet.FieldByName(Prefix + Features[i]).DataType in [ftSmallint, ftBCD, ftInteger, ftLargeInt] then
+          if not DataSet.FieldByName(Prefix + Features[i]).IsNull then
+            ExtraConditions.Add('(z.' + Features[i] + ' + 0) = :' + Features[i])
+          else
+            ExtraConditions.Add('(z.' + Features[i] + ' + 0) IS NULL ')
         else
-          ExtraConditions.Add('z.' + Features[i] + ' IS NULL ');
+          if not DataSet.FieldByName(Prefix + Features[i]).IsNull then
+            ExtraConditions.Add('z.' + Features[i] + ' = :' + Features[i])
+          else
+            ExtraConditions.Add('z.' + Features[i] + ' IS NULL ');
       end;
       RemainsFeatures.Add(Features[i]);
     end;
@@ -7585,11 +7591,16 @@ begin
       begin
         if IgnoryFeatures.IndexOf(gdcInvRemains.ViewFeatures[i]) < 0 then
         begin
-          if not gdcInvRemains.FieldByName(gdcInvRemains.ViewFeatures[i]).IsNull then
-            ExtraConditions.Add('z.' + gdcInvRemains.ViewFeatures[i] + ' = :' +
-            gdcInvRemains.ViewFeatures[i])
+          if gdcInvRemains.FieldByName(gdcInvRemains.ViewFeatures[i]).DataType in [ftSmallint, ftBCD, ftInteger, ftLargeInt] then
+            if not gdcInvRemains.FieldByName(gdcInvRemains.ViewFeatures[i]).IsNull then
+              ExtraConditions.Add('(z.' + gdcInvRemains.ViewFeatures[i] + ' + 0) = :' + gdcInvRemains.ViewFeatures[i])
+            else
+              ExtraConditions.Add('(z.' + gdcInvRemains.ViewFeatures[i] + ' + 0) IS NULL ')
           else
-            ExtraConditions.Add('z.' + gdcInvRemains.ViewFeatures[i] + ' IS NULL ');
+            if not gdcInvRemains.FieldByName(gdcInvRemains.ViewFeatures[i]).IsNull then
+              ExtraConditions.Add('z.' + gdcInvRemains.ViewFeatures[i] + ' = :' + gdcInvRemains.ViewFeatures[i])
+            else
+              ExtraConditions.Add('z.' + gdcInvRemains.ViewFeatures[i] + ' IS NULL ');
         end;
       end;
     end;
