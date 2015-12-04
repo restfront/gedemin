@@ -2346,6 +2346,14 @@ type
 
   end;
 
+  TwrpGdcInvCard = class(TwrpGDCBase, IgsGdcInvCard)
+  private
+    function  GetGdcInvCard: TgdcInvCard;
+  protected
+    function  Get_gdcInvDocumentLine: IgsGDCDocument; safecall;
+    procedure Set_gdcInvDocumentLine(const Value: IgsGDCDocument); safecall;
+  end;
+
   TwrpGdcInvRemains = class(TwrpGDCInvBaseRemains, IgsGdcInvRemains)
   private
     function  GetGdcInvRemains: TgdcInvRemains;
@@ -19342,6 +19350,23 @@ begin
 end;
 {$ENDIF}
 
+{ TwrpGdcInvCard }
+
+function TwrpGdcInvCard.GetGdcInvCard: TgdcInvCard;
+begin
+  Result := GetObject as TgdcInvCard;
+end;
+
+function TwrpGdcInvCard.Get_gdcInvDocumentLine: IgsGDCDocument;
+begin
+  Result := GetGdcOLEObject(GetGdcInvCard.gdcInvDocumentLine) as IgsGDCDocument;
+end;
+
+procedure TwrpGdcInvCard.Set_gdcInvDocumentLine(const Value: IgsGDCDocument);
+begin
+  GetGdcInvCard.gdcInvDocumentLine := InterfaceToObject(Value) as TgdcDocument;
+end;
+
 initialization
   RegisterGdcOLEClass(TgsIBGrid, TwrpGsIBGrid, ComServer.TypeLib, IID_IgsGsIBGrid);
   RegisterGdcOLEClass(TgsIBLookupComboBox, TwrpIBLookupComboBoxX, ComServer.TypeLib, IID_IgsIBLookupComboBoxX);
@@ -19403,6 +19428,7 @@ initialization
   RegisterGdcOLEClass(TgdcInvDocumentLine, TwrpGdcInvDocumentLine, ComServer.TypeLib, IID_IgsGdcInvDocumentLine);
   RegisterGdcOLEClass(TgdcInvDocumentType, TwrpGdcInvDocumentType, ComServer.TypeLib, IID_IgsGdcInvDocumentType);
   RegisterGdcOLEClass(TgdcInvMovement, TwrpGdcInvMovement, ComServer.TypeLib, IID_IgsGdcInvMovement);
+  RegisterGdcOLEClass(TgdcInvCard, TwrpGdcInvCard, ComServer.TypeLib, IID_IgsGdcInvCard);
   RegisterGdcOLEClass(TgdcInvRemains, TwrpGdcInvRemains, ComServer.TypeLib, IID_IgsGdcInvRemains);
   RegisterGdcOLEClass(TgdcBaseBank, TwrpGdcBaseBank, ComServer.TypeLib, IID_IgsGdcBaseBank);
 //  RegisterGdcOLEClass(TgdcBasePayment, TwrpGdcBasePayment, ComServer.TypeLib, IID_IgsGdcBasePayment);
